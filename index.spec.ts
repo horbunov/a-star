@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { runner } from '.';
 
-describe('runner test', function () {
+describe('Runner tests', function () {
   it('Simple test from task', function () {
     const result = runner(
       [
@@ -42,11 +42,11 @@ describe('runner test', function () {
 
     expect(result).to.deep.equal([
       { x: 5, y: 2 },
-      { x: 4, y: 3 },
+      { x: 5, y: 3 },
       { x: 5, y: 4 },
       { x: 4, y: 5 },
       { x: 3, y: 5 },
-      { x: 2, y: 4 },
+      { x: 2, y: 5 },
       { x: 1, y: 5 },
     ]);
   });
@@ -67,8 +67,6 @@ describe('runner test', function () {
       0,
       3,
     );
-
-    console.log(result);
 
     expect(result).to.deep.equal([
       { x: 4, y: 3 },

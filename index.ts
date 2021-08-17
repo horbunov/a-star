@@ -89,7 +89,9 @@ export class AStar {
           continue;
         }
 
-        const g = currentNode.g + 1;
+        const g =
+          currentNode.g +
+          Math.sqrt(this.grid.getDistance(currentNode, neighbor));
         let gBest = false;
 
         if (!openedList.includes(neighbor)) {
