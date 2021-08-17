@@ -2,14 +2,21 @@
   "name": "a-star",
   "version": "1.0.0",
   "description": "Поиск кратчайшего пути от точки А в точку Б при помощи алгоритма A*",
-  "main": "index.ts",
+  "main": "index.js",
   "scripts": {
-    "start": "ts-node index.ts"
+    "start": "node -r ts-node/register index.ts",
+    "test": "mocha -r ts-node/register index.spec.ts"
   },
   "author": "horbunovrs",
   "license": "ISC",
   "devDependencies": {
+    "@types/chai": "^4.2.21",
+    "@types/mocha": "^9.0.0",
+    "mocha": "^9.0.3",
     "ts-node": "^10.2.0",
     "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "chai": "^4.3.4"
   }
 }
