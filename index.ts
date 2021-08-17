@@ -3,38 +3,57 @@ interface IPoint {
   y: number;
 }
 
-/** Узел сетки для алгоритма A* */
 class GridNode implements IPoint {
   public x: number;
   public y: number;
   public blocked: boolean;
   public parent?: GridNode;
-  /** Стоимость пути к узлу */
-  public g: number;
-  /** Расстояние к финишу */
-  public h: number;
 
   constructor(x: number, y: number, blocked: boolean) {
     this.x = x;
     this.y = y;
     this.blocked = blocked;
-    this.g = 0;
-    this.h = -1;
-  }
-
-  /** Счет (g + h) */
-  public get f() {
-    return this.g + this.h;
   }
 }
+
+class Grid<T extends GridNode = GridNode> extends Array<T[]> {
+  constructor(gridList: string[], blockedChar = 'X') {
+    super();
+    this.init(gridList, blockedChar);
+  }
+
+  private init(gridList, blockedChar) {
+    for (let i = 0; i < gridList.length; i++) {
+      const rowText = gridList[i];
+      const row: T[] = [];
+
+      for (let j = 0; j < rowText.length; j++) {
+        row.push(new GridNode(i, j, rowText[j] === blockedChar) as T);
+      }
+
+      this.push(row);
+    }
+  }
+
+  public getDistance(from: IPoint, to: IPoint) {
+    return Math.abs(from.x - to.x) + Math.abs(from.y - to.y);
+  }
+}
+
+type AStarNode = GridNode & {
+  g: number;
+  h: number;
+  f: number;
+  parent: AStarNode;
+};
 
 export class AStar {
   public static BLOCKED_CHAR = 'X';
 
-  private grid: GridNode[][];
+  private grid: Grid<AStarNode>;
 
   constructor(gridList: string[]) {
-    this.initGrid(gridList);
+    this.grid = new Grid<AStarNode>(gridList);
   }
 
   public search(startX: number, startY: number, endX: number, endY: number) {
@@ -45,15 +64,16 @@ export class AStar {
       return [];
     }
 
-    start.h = this.calcH(start, end);
+    start.g = 0;
+    start.h = this.grid.getDistance(start, end);
+    start.f = start.h;
 
     const openedList = [start];
-    const closedList: GridNode[] = [];
+    const closedList: AStarNode[] = [];
 
     while (openedList.length > 0) {
-      const currentNode = openedList.reduce(
-        (acc, item) => (acc.f < item.f ? acc : item),
-        openedList[0],
+      const currentNode = openedList.reduce((acc, item) =>
+        acc.f < item.f ? acc : item,
       );
 
       if (currentNode.h === 0) {
@@ -73,7 +93,7 @@ export class AStar {
         let gBest = false;
 
         if (!openedList.includes(neighbor)) {
-          neighbor.h = this.calcH(neighbor, end);
+          neighbor.h = this.grid.getDistance(neighbor, end);
           openedList.push(neighbor);
           gBest = true;
         } else if (g < neighbor.g) {
@@ -83,6 +103,7 @@ export class AStar {
         if (gBest) {
           neighbor.parent = currentNode;
           neighbor.g = g;
+          neighbor.f = g + neighbor.h;
         }
       }
     }
@@ -90,29 +111,12 @@ export class AStar {
     return [];
   }
 
-  private initGrid(gridList: string[]) {
-    const grid: GridNode[][] = [];
-
-    for (let i = 0; i < gridList.length; i++) {
-      const rowText = gridList[i];
-      const row: GridNode[] = [];
-
-      for (let j = 0; j < rowText.length; j++) {
-        row.push(new GridNode(i, j, rowText[j] === AStar.BLOCKED_CHAR));
-      }
-
-      grid.push(row);
-    }
-
-    this.grid = grid;
+  private getF(node: AStarNode) {
+    return node.g + node.h;
   }
 
-  private calcH(from: IPoint, to: IPoint) {
-    return Math.abs(from.x - to.x) + Math.abs(from.y - to.y);
-  }
-
-  private getNeighbors({ x, y }: IPoint): GridNode[] {
-    const result: GridNode[] = [];
+  private getNeighbors({ x, y }: IPoint) {
+    const result: AStarNode[] = [];
 
     // Лево
     if (this.grid[x - 1]?.[y]) {
@@ -157,7 +161,7 @@ export class AStar {
     return result;
   }
 
-  private getPath(node: GridNode) {
+  private getPath(node: AStarNode) {
     let current = node;
     const result = [current];
 
